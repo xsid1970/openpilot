@@ -99,8 +99,8 @@ class CarInterfaceBase():
       events.add(EventName.wrongCarMode)
     if cs_out.espDisabled:
       events.add(EventName.espDisabled)
-    #if cs_out.gasPressed:
-    #  events.add(EventName.gasPressed)
+    if cs_out.gasPressed:
+      events.add(EventName.gasPressed)
     if cs_out.stockFcw:
       events.add(EventName.stockFcw)
     if cs_out.stockAeb:
@@ -112,8 +112,8 @@ class CarInterfaceBase():
 
     if cs_out.steerError:
       events.add(EventName.steerUnavailable)
-    #elif cs_out.steerWarning:
-    #  events.add(EventName.steerTempUnavailable)
+    elif cs_out.steerWarning:
+      events.add(EventName.steerTempUnavailable)
 
     # Disable on rising edge of gas or brake. Also disable on brake when speed > 0.
     # Optionally allow to press gas at zero speed to resume.
