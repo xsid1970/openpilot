@@ -418,14 +418,7 @@ void handle_message(UIState *s, SubMaster &sm) {
 
     auto data = scene.thermal;
 
-    scene.maxCpuTemp = data.getCpu1();
-    if (scene.maxCpuTemp < data.getCpu1())
-      scene.maxCpuTemp = data.getCpu1();
-    else if (scene.maxCpuTemp < data.getCpu2())
-      scene.maxCpuTemp = data.getCpu2();
-    else if (scene.maxCpuTemp < data.getCpu3())
-      scene.maxCpuTemp = data.getCpu3();
-
+    scene.maxCpuTemp = (data.getCpu0() + data.getCpu1() + data.getCpu2() + data.getCpu3()) / 4;
     scene.maxBatTemp = data.getBat();
   }
   if (sm.updated("ubloxGnss")) {
