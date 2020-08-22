@@ -831,12 +831,7 @@ int main(int argc, char* argv[]) {
     // poll for touch events
     int touch_x = -1, touch_y = -1;
     int touched = touch_poll(&touch, &touch_x, &touch_y, 0);
-    if (touched == 1) {
-      set_awake(s, true);
-      handle_sidebar_touch(s, touch_x, touch_y);
-      handle_vision_touch(s, touch_x, touch_y);
-    }
-
+    
     if (!s->started) {
       // always process events offroad
       check_messages(s);
@@ -878,10 +873,19 @@ int main(int argc, char* argv[]) {
 
     // Don't waste resources on drawing in case screen is off
     if (s->awake) {
-      dashcam(s, touch_x, touch_y);
+    
+      if(dashcam(s, touch_x, touch_y))
+        touched = 0;
+        
       ui_draw(s);
       glFinish();
       should_swap = true;
+    }
+    
+    if (touched == 1) {
+      set_awake(s, true);
+      handle_sidebar_touch(s, touch_x, touch_y);
+      handle_vision_touch(s, touch_x, touch_y);
     }
 
     s->sound.setVolume(fmin(MAX_VOLUME, MIN_VOLUME + s->scene.controls_state.getVEgo() / 5)); // up one notch every 5 m/s
@@ -891,9 +895,9 @@ int main(int argc, char* argv[]) {
     } else if (s->started) {
       if (!s->controls_seen) {
         // car is started, but controlsState hasn't been seen at all
-        s->scene.alert_text1 = "openpilot Unavailable";
-        s->scene.alert_text2 = "Waiting for controls to start";
-        s->scene.alert_size = cereal::ControlsState::AlertSize::MID;
+        s->scene.alert_text2 = "openpilot Unavailable";
+        s->scene.alert_text1 = "Waiting for controls to start";
+        s->scene.alert_size = cereal::ControlsState::AlertSize::SMALL;
       } else {
         // car is started, but controls is lagging or died
         LOGE("Controls unresponsive");

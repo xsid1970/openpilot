@@ -192,6 +192,9 @@ static void update_track_data(UIState *s, bool is_mpc, track_vertices_data *pvd)
 
     vec4 p_car_space = (vec4){{px, py, 0., 1.}};
     vec3 p_full_frame = car_space_to_full_frame(s, p_car_space);
+    if (p_full_frame.v[0] < 0. || p_full_frame.v[1] < 0.) {
+      continue;
+    }
     pvd->v[pvd->cnt].x = p_full_frame.v[0];
     pvd->v[pvd->cnt].y = p_full_frame.v[1];
     pvd->cnt += 1;
@@ -291,7 +294,7 @@ static void update_lane_line_data(UIState *s, const float *points, float off, mo
     pvd->v[pvd->cnt].y = p_full_frame.v[1];
     pvd->cnt += 1;
   }
-  for (int i = rcount; i > 0; i--) {
+  for (int i = rcount - 1; i > 0; i--) {
     float px = (float)i;
     float py = points[i] + off;
     const vec4 p_car_space = (vec4){{px, py, 0., 1.}};
@@ -307,15 +310,13 @@ static void update_lane_line_data(UIState *s, const float *points, float off, mo
 static void update_all_lane_lines_data(UIState *s, const PathData &path, model_path_vertices_data *pstart) {
   update_lane_line_data(s, path.points, 0.025*path.prob, pstart, path.validLen);
   float var = fmin(path.std, 0.7);
-  update_lane_line_data(s, path.points, -var, pstart + 1, path.validLen);
-  update_lane_line_data(s, path.points, var, pstart + 2, path.validLen);
+  update_lane_line_data(s, path.points, var, pstart + 1, path.validLen);
 }
 
 static void ui_draw_lane(UIState *s, const PathData *path, model_path_vertices_data *pstart, NVGcolor color) {
   ui_draw_lane_line(s, pstart, color);
   color.a /= 25;
   ui_draw_lane_line(s, pstart + 1, color);
-  ui_draw_lane_line(s, pstart + 2, color);
 }
 
 static void ui_draw_vision_lanes(UIState *s) {
@@ -677,7 +678,7 @@ static void bb_ui_draw_L_Extra(UIState *s)
     const UIScene *scene = &s->scene;
 
     int w = 184;
-    int x = (s->scene.ui_viz_rx + (bdr_s*2)) + 190;
+    int x = (s->scene.ui_viz_rx + (bdr_s*2)) + 220;
     int y = 100;
     int xo = 180;
     int height = 70;
@@ -754,6 +755,11 @@ static void bb_ui_draw_L_Extra(UIState *s)
 
     y += height;
     snprintf(str, sizeof(str), "SR: %.3f", scene->liveParams.getSteerRatio());
+    ui_draw_text(s->vg, text_x, y, str, 25 * 2.5, COLOR_WHITE_ALPHA(200), s->font_sans_regular);
+
+    y += height;
+    snprintf(str, sizeof(str), "Angle: %.3f, %.3f", scene->liveParams.getAngleOffset(),
+            scene->liveParams.getAngleOffsetAverage());
     ui_draw_text(s->vg, text_x, y, str, 25 * 2.5, COLOR_WHITE_ALPHA(200), s->font_sans_regular);
 }
 
